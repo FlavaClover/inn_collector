@@ -3,10 +3,13 @@ import sys
 import asyncio
 import logging
 import requests
+import time
+import signal
 from pprint import pp
 from random import choice
 from datetime import datetime
 from dataclasses import dataclass, asdict
+from threading import Thread
 from concurrent.futures import ProcessPoolExecutor, wait, as_completed
 
 from bs4 import BeautifulSoup
@@ -244,6 +247,21 @@ def _update(interval: tuple[int, int, int], chunk_size: int = 10):
     asyncio.run(update_inns(interval, chunk_size))
 
 
+def start_thread_to_terminate_when_parent_process_dies(ppid):
+    pid = os.getpid()
+
+    def f():
+        while True:
+            try:
+                os.kill(ppid, 0)
+            except OSError:
+                os.kill(pid, signal.SIGTERM)
+            time.sleep(1)
+
+    thread = Thread(target=f, daemon=True)
+    thread.start()
+
+
 async def start_update_inns(interval_size: int, workers: int = 5, chunk_size: int = 10):
     engine = create_async_engine(database)
 
@@ -272,7 +290,11 @@ async def start_update_inns(interval_size: int, workers: int = 5, chunk_size: in
 
         logger.info('Intervals count %s', len(intervals))
         completed = 0
-        with ProcessPoolExecutor(max_workers=workers) as executor:
+        with ProcessPoolExecutor(
+                max_workers=workers,
+                initializer=start_thread_to_terminate_when_parent_process_dies,
+                initargs=(os.getpid(), ),
+        ) as executor:
             futures = []
             for interval in intervals:
                 futures.append(
