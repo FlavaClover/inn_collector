@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "inn-collector"
+version = "0.1.0"
+description = ""
+authors = ["Zaur <ztedeev@ptsecurity.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+bs4 = "^0.0.2"
+python-dotenv = "^1.0.1"
+aiohttp = "^3.10.4"
+sqlalchemy = "^2.0.32"
+asyncpg = "^0.29.0"
+greenlet = "^3.0.3"
+psycopg2 = "^2.9.9"
+backoff = "^2.2.1"
+requests = "^2.32.3"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
