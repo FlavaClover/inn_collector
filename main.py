@@ -140,11 +140,8 @@ async def get_inn_info(inn: str, session: ClientSession) -> Info:
                               'AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4.1 Safari/605.1.15'
             }
     ) as response:
-        try:
-            body = await response.json()
-        except ContentTypeError:
-            logger.exception(await response.text())
-            raise
+
+        body = await response.json()
 
         if isinstance(body, bool):
             return Info(inn, None, None, None, None, None)
